@@ -55,7 +55,7 @@ export default function Base44Inspector({ sessionId }) {
               <section>
                 <div className="text-white mb-1">GRAMMAR_TAGS:</div>
                 {Object.entries(data.grammar_tags).map(([k, v]) => (
-                  <div key={k} className="text-emerald-400">  {k}  =&gt; {v}</div>
+                  <div key={`tag-${k}`} className="text-emerald-400">  {k}  =&gt; {v}</div>
                 ))}
               </section>
               <section>
@@ -66,13 +66,13 @@ export default function Base44Inspector({ sessionId }) {
               <section>
                 <div className="text-white mb-1">RECENT STATES (turn|lvl|prof|topic):</div>
                 {(data.recent_states_b44 || []).map((s, i) => (
-                  <div key={i} className="text-emerald-400">  {String(i).padStart(2, "0")}: {s}</div>
+                  <div key={`state-${i}-${s}`} className="text-emerald-400">  {String(i).padStart(2, "0")}: {s}</div>
                 ))}
               </section>
               <section>
                 <div className="text-white mb-1">VOCAB (b44):</div>
-                {(data.vocab_b44 || []).map((v, i) => (
-                  <div key={i} className="text-emerald-400">  {v.lemma.padEnd(14)} {v.b44}</div>
+                {(data.vocab_b44 || []).map((v) => (
+                  <div key={`vb44-${v.lemma}`} className="text-emerald-400">  {v.lemma.padEnd(14)} {v.b44}</div>
                 ))}
                 {(!data.vocab_b44 || data.vocab_b44.length === 0) && (
                   <div className="text-zinc-500">  (vacío)</div>

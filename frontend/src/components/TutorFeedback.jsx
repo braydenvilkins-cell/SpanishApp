@@ -121,7 +121,7 @@ export default function TutorFeedback({ turn, level, assistance = 1, transcriptV
           <div data-testid="tutor-corrections">
             <div className="overline text-zinc-500 mb-2">CORRECTION</div>
             {corrections.map((c, i) => (
-              <div key={i} className="border border-zinc-200 p-3 mb-2 last:mb-0">
+              <div key={`${c.wrong}-${c.correct}-${i}`} className="border border-zinc-200 p-3 mb-2 last:mb-0">
                 <div className="font-mono text-sm">
                   <span style={{ color: "var(--red)", textDecoration: "line-through" }}>
                     {c.wrong}

@@ -54,9 +54,10 @@ export default function Vocab({ session }) {
         {cells.map((v, i) => {
           const m = v?.mastery ?? -1;
           const cls = v ? heatClass(m) : "heat-0 opacity-40";
-          if (!v) return <div key={i} className={`w-6 h-6 ${cls}`} />;
+          const cellKey = v ? `vocab-${v.lemma}` : `pad-${i}`;
+          if (!v) return <div key={cellKey} className={`w-6 h-6 ${cls}`} />;
           return (
-            <HoverCard key={i} openDelay={50}>
+            <HoverCard key={cellKey} openDelay={50}>
               <HoverCardTrigger asChild>
                 <div
                   data-testid={`vocab-cell-${v.lemma}`}
@@ -83,8 +84,8 @@ export default function Vocab({ session }) {
       <div className="mt-10 border border-zinc-200">
         <div className="bg-black text-white px-4 py-2 overline">RECENT WORDS</div>
         <div className="divide-y divide-zinc-200">
-          {vocab.slice(-20).reverse().map((v, i) => (
-            <div key={i} className="grid grid-cols-12 px-4 py-2 font-mono text-sm">
+          {vocab.slice(-20).reverse().map((v) => (
+            <div key={`row-${v.lemma}`} className="grid grid-cols-12 px-4 py-2 font-mono text-sm">
               <div className="col-span-3 font-display text-base">{v.lemma}</div>
               <div className="col-span-2 text-zinc-500">{TAG_LABEL[v.tag]}</div>
               <div className="col-span-2 text-zinc-500">{v.cefr}</div>

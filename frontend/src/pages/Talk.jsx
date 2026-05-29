@@ -42,7 +42,11 @@ export default function Talk({ session, refreshSession }) {
     }
     try {
       if (audioRef.current) {
-        try { audioRef.current.pause(); } catch (_) {}
+        try {
+          audioRef.current.pause();
+        } catch (pauseErr) {
+          console.warn("audio pause failed", pauseErr);
+        }
       }
       const a = new Audio(`data:audio/mp3;base64,${source}`);
       a.playbackRate = speed;
@@ -50,8 +54,12 @@ export default function Talk({ session, refreshSession }) {
       setOrbState("speaking");
       a.onended = () => setOrbState("idle");
       a.onerror = () => setOrbState("idle");
-      a.play().catch(() => setOrbState("idle"));
-    } catch {
+      a.play().catch((playErr) => {
+        console.warn("audio play failed", playErr);
+        setOrbState("idle");
+      });
+    } catch (err) {
+      console.error("playAudio failed", err);
       setOrbState("idle");
     }
   };

@@ -64,8 +64,9 @@ export default function Transcript({ history, show }) {
         {history.map((h, i) => {
           const reply = h.assistant_reply || h.assistant || "";
           const englishGloss = h.english_gloss || h.english || "";
+          const turnKey = h.turn ?? i;
           return (
-          <div key={i} className="space-y-3">
+          <div key={turnKey} className="space-y-3">
             <div>
               <div className="overline text-zinc-400">YOU · {h.pronunciation_score ?? "—"}/99</div>
               <div className="text-base text-zinc-700">{h.user}</div>
@@ -74,7 +75,11 @@ export default function Transcript({ history, show }) {
               <div className="overline" style={{ color: "var(--klein)" }}>NIVEL</div>
               <div className="text-xl leading-relaxed">
                 {reply.split(/(\s+)/).map((tok, j) =>
-                  /\s+/.test(tok) ? tok : <Word key={j} word={tok} context={reply} />
+                  /\s+/.test(tok) ? (
+                    <React.Fragment key={`s-${turnKey}-${j}`}>{tok}</React.Fragment>
+                  ) : (
+                    <Word key={`w-${turnKey}-${j}-${tok}`} word={tok} context={reply} />
+                  )
                 )}
               </div>
               {englishGloss && (
@@ -85,7 +90,7 @@ export default function Transcript({ history, show }) {
               <div className="flex flex-wrap gap-2 pt-1">
                 {h.corrections.map((c, k) => (
                   <span
-                    key={k}
+                    key={`c-${turnKey}-${c.wrong}-${c.correct}-${k}`}
                     data-testid={`correction-chip-${i}-${k}`}
                     className="inline-flex items-center gap-2 border border-black px-2 py-1 font-mono text-xs"
                   >
