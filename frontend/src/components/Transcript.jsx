@@ -61,7 +61,10 @@ export default function Transcript({ history, show }) {
         {history.length === 0 && (
           <div className="text-zinc-400 font-mono text-sm">No turns yet.</div>
         )}
-        {history.map((h, i) => (
+        {history.map((h, i) => {
+          const reply = h.assistant_reply || h.assistant || "";
+          const englishGloss = h.english_gloss || h.english || "";
+          return (
           <div key={i} className="space-y-3">
             <div>
               <div className="overline text-zinc-400">YOU · {h.pronunciation_score ?? "—"}/99</div>
@@ -70,12 +73,12 @@ export default function Transcript({ history, show }) {
             <div>
               <div className="overline" style={{ color: "var(--klein)" }}>NIVEL</div>
               <div className="text-xl leading-relaxed">
-                {h.assistant.split(/(\s+)/).map((tok, j) =>
-                  /\s+/.test(tok) ? tok : <Word key={j} word={tok} context={h.assistant} />
+                {reply.split(/(\s+)/).map((tok, j) =>
+                  /\s+/.test(tok) ? tok : <Word key={j} word={tok} context={reply} />
                 )}
               </div>
-              {h.english && (
-                <div className="text-sm text-zinc-400 mt-1">{h.english}</div>
+              {englishGloss && (
+                <div className="text-sm text-zinc-400 mt-1">{englishGloss}</div>
               )}
             </div>
             {h.corrections?.length > 0 && (
@@ -96,7 +99,8 @@ export default function Transcript({ history, show }) {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
