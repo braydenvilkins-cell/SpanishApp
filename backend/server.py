@@ -48,6 +48,7 @@ class TextTurnIn(BaseModel):
     session_id: str
     text: str
     speak: bool = True
+    assistance_factor: float = 1.0
 
 
 class TranslateIn(BaseModel):
@@ -106,13 +107,18 @@ def parse_llm_json(raw: str) -> Dict:
         return json.loads(m.group(0))
 
 
-def update_proficiency(prof: Dict[str, int], grade: Dict[str, int], alpha: float = 0.18) -> Dict[str, int]:
-    """Exponential moving average toward each new grade."""
+def update_proficiency(prof: Dict[str, int], grade: Dict[str, int], alpha: float = 0.18, assistance_factor: float = 1.0) -> Dict[str, int]:
+    """Exponential moving average toward each new grade.
+    `assistance_factor` (0..1) shrinks the effective learning rate when the user
+    is leaning on aids (slowing voice, peeking at transcript). Improvement slows
+    proportionally, so unaided practice is worth more.
+    """
+    effective_alpha = max(0.01, alpha * max(0.0, min(1.0, assistance_factor)))
     out = {}
     for dim in base44.PROFICIENCY_DIMS:
         old = prof.get(dim, 10)
         new = int(grade.get(dim, old))
-        out[dim] = int(round(old * (1 - alpha) + new * alpha))
+        out[dim] = int(round(old * (1 - effective_alpha) + new * effective_alpha))
     return out
 
 
@@ -189,7 +195,7 @@ async def daily_start(body: dict):
     return {"topic": s["topic"], "target": s["target"], "opener": p["opener"]}
 
 
-async def _process_turn(session: Dict, user_text: str, from_stt: bool, speak: bool) -> Dict:
+async def _process_turn(session: Dict, user_text: str, from_stt: bool, speak: bool, assistance_factor: float = 1.0) -> Dict:
     parsed = await llm_turn(session, user_text, from_stt)
     assistant_reply: str = parsed.get("assistant_reply", "Lo siento, ¿puedes repetir?")
     grade = parsed.get("cefr_grade", {})
@@ -201,10 +207,10 @@ async def _process_turn(session: Dict, user_text: str, from_stt: bool, speak: bo
     strength = parsed.get("strength", "")
     next_target = parsed.get("next_target", "")
 
-    # Update proficiency
+    # Update proficiency (modulated by assistance_factor)
     if from_stt:
         grade["pronunciation"] = pron
-    new_prof = update_proficiency(session["proficiency"], grade)
+    new_prof = update_proficiency(session["proficiency"], grade, assistance_factor=assistance_factor)
     session["proficiency"] = new_prof
     session["level"] = cefr.overall_level(new_prof)
     session["turn"] += 1
@@ -283,19 +289,21 @@ async def _process_turn(session: Dict, user_text: str, from_stt: bool, speak: bo
         "turn": session["turn"],
         "state_b44": state_code,
         "audio_b64": audio_b64,
+        "assistance_factor": assistance_factor,
     }
 
 
 @api.post("/turn/text")
 async def turn_text(body: TextTurnIn):
     s = await get_or_create_session(body.session_id)
-    return await _process_turn(s, body.text, from_stt=False, speak=body.speak)
+    return await _process_turn(s, body.text, from_stt=False, speak=body.speak, assistance_factor=body.assistance_factor)
 
 
 @api.post("/turn/voice")
 async def turn_voice(
     session_id: str = Form(...),
     speak: bool = Form(True),
+    assistance_factor: float = Form(1.0),
     audio: UploadFile = File(...),
 ):
     s = await get_or_create_session(session_id)
@@ -324,7 +332,7 @@ async def turn_voice(
     if not user_text:
         user_text = "(silencio)"
 
-    resp = await _process_turn(s, user_text, from_stt=True, speak=speak)
+    resp = await _process_turn(s, user_text, from_stt=True, speak=speak, assistance_factor=assistance_factor)
     resp["user_text"] = user_text
     return resp
 
@@ -432,5 +440,8 @@ app.add_middleware(
 
 
 @app.on_event("shutdown")
+async def _shutdown():
+    client.close()
+app.on_event("shutdown")
 async def _shutdown():
     client.close()

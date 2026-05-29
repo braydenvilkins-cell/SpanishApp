@@ -4,9 +4,18 @@ import Transcript from "../components/Transcript";
 import Base44Inspector from "../components/Base44Inspector";
 import TutorFeedback from "../components/TutorFeedback";
 import { Switch } from "../components/ui/switch";
+import { Slider } from "../components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { voiceTurn, textTurn } from "../lib/api";
 import { toast } from "sonner";
+
+// Penalty model: slowing audio + peeking at transcript both compress the
+// proficiency-update step server-side. Clamped to [0.4, 1.0].
+function computeAssistance(speed, transcriptViews) {
+  const speedPenalty = Math.max(0, 1 - speed) * 0.5;          // 0.5x → 0.25
+  const peekPenalty = Math.min(0.25, transcriptViews * 0.05); // each tab open → -0.05 (cap 0.25)
+  return Math.max(0.4, 1 - speedPenalty - peekPenalty);
+}
 
 export default function Talk({ session, refreshSession }) {
   const [orbState, setOrbState] = useState("idle");
@@ -14,32 +23,45 @@ export default function Talk({ session, refreshSession }) {
   const [history, setHistory] = useState([]);
   const [text, setText] = useState("");
   const [lastTurn, setLastTurn] = useState(null);
+  const [speed, setSpeed] = useState(1.0);
+  const [transcriptViews, setTranscriptViews] = useState(0);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
   const audioRef = useRef(null);
+  const lastAudioRef = useRef(null);
 
   const sid = session?.session_id;
+  const assistance = computeAssistance(speed, transcriptViews);
 
   const playAudio = (b64) => {
-    if (!b64) {
-      // No audio available - return to idle so the user can speak again
+    if (b64) lastAudioRef.current = b64;
+    const source = b64 || lastAudioRef.current;
+    if (!source) {
       setOrbState("idle");
       return;
     }
     try {
-      // Stop any previous playback
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch (_) {}
       }
-      const a = new Audio(`data:audio/mp3;base64,${b64}`);
+      const a = new Audio(`data:audio/mp3;base64,${source}`);
+      a.playbackRate = speed;
       audioRef.current = a;
       setOrbState("speaking");
       a.onended = () => setOrbState("idle");
       a.onerror = () => setOrbState("idle");
       a.play().catch(() => setOrbState("idle"));
-    } catch (e) {
+    } catch {
       setOrbState("idle");
     }
+  };
+
+  const repeatLast = () => {
+    if (!lastAudioRef.current) {
+      toast("Nothing to repeat yet — take a turn first.");
+      return;
+    }
+    playAudio(null);
   };
 
   const startRecording = async () => {
@@ -57,10 +79,10 @@ export default function Talk({ session, refreshSession }) {
         }
         setOrbState("thinking");
         try {
-          const res = await voiceTurn(sid, blob, true);
+          const res = await voiceTurn(sid, blob, true, assistance);
           appendTurn({ user: res.user_text, ...res });
           playAudio(res.audio_b64);
-        } catch (e) {
+        } catch {
           toast.error("Transcription failed. Try again.");
           setOrbState("idle");
         }
@@ -68,7 +90,7 @@ export default function Talk({ session, refreshSession }) {
       recorderRef.current = rec;
       rec.start();
       setOrbState("recording");
-    } catch (e) {
+    } catch {
       toast.error("Microphone permission required");
       setOrbState("idle");
     }
@@ -91,12 +113,18 @@ export default function Talk({ session, refreshSession }) {
     const userText = text;
     setText("");
     try {
-      const res = await textTurn(sid, userText, true);
+      const res = await textTurn(sid, userText, true, assistance);
       appendTurn({ user: userText, ...res });
       playAudio(res.audio_b64);
-    } catch (e) {
+    } catch {
       toast.error("Server error. Try again.");
       setOrbState("idle");
+    }
+  };
+
+  const onTabChange = (val) => {
+    if (val === "transcript") {
+      setTranscriptViews((n) => n + 1);
     }
   };
 
@@ -116,7 +144,52 @@ export default function Talk({ session, refreshSession }) {
 
         <VoiceOrb state={orbState} onStart={startRecording} onStop={stopRecording} />
 
-        <div className="mt-12 w-full max-w-md flex gap-2">
+        {/* Speed dial + Repeat */}
+        <div className="mt-10 w-full max-w-md border border-zinc-200">
+          <div className="px-4 py-3 border-b border-zinc-200 flex items-center justify-between">
+            <span className="overline">VOICE SPEED</span>
+            <span
+              className="font-mono text-sm"
+              data-testid="speed-value"
+              style={{ color: speed < 1 ? "var(--red)" : "var(--text)" }}
+            >
+              {speed.toFixed(2)}x
+            </span>
+          </div>
+          <div className="px-4 py-4 flex items-center gap-4">
+            <span className="font-mono text-xs text-zinc-400">0.5×</span>
+            <Slider
+              data-testid="speed-slider"
+              value={[speed]}
+              min={0.5}
+              max={1.5}
+              step={0.05}
+              onValueChange={(v) => setSpeed(v[0])}
+              className="flex-1"
+            />
+            <span className="font-mono text-xs text-zinc-400">1.5×</span>
+          </div>
+          <div className="px-4 pb-3 flex items-center justify-between gap-3">
+            <button
+              data-testid="repeat-last-btn"
+              onClick={repeatLast}
+              disabled={!lastAudioRef.current}
+              className="invert-hover px-4 py-2 overline tactile disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              ↺ REPEAT
+            </button>
+            <span
+              className="font-mono text-xs text-zinc-500 text-right"
+              data-testid="assistance-hint"
+            >
+              {speed < 1
+                ? `Slowing audio reduces credit (${Math.round(assistance * 100)}%)`
+                : `Full credit (${Math.round(assistance * 100)}%)`}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-8 w-full max-w-md flex gap-2">
           <input
             data-testid="text-input"
             value={text}
@@ -137,7 +210,7 @@ export default function Talk({ session, refreshSession }) {
 
       {/* Right: tutor feedback + transcript */}
       <aside className="lg:col-span-6 p-6 space-y-4">
-        <Tabs defaultValue="tutor" className="w-full">
+        <Tabs defaultValue="tutor" onValueChange={onTabChange} className="w-full">
           <TabsList className="rounded-none p-0 bg-white border border-zinc-200 w-full grid grid-cols-2 h-auto">
             <TabsTrigger
               value="tutor"
@@ -151,12 +224,18 @@ export default function Talk({ session, refreshSession }) {
               data-testid="tab-transcript"
               className="rounded-none overline data-[state=active]:bg-black data-[state=active]:text-white py-2"
             >
-              TRANSCRIPT
+              TRANSCRIPT {transcriptViews > 0 ? `· ${transcriptViews}` : ""}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tutor" className="mt-4 space-y-3">
-            <TutorFeedback turn={lastTurn} level={session?.level || "A1"} />
+            <TutorFeedback
+              turn={lastTurn}
+              level={session?.level || "A1"}
+              assistance={assistance}
+              transcriptViews={transcriptViews}
+              speed={speed}
+            />
             <Base44Inspector sessionId={sid} />
           </TabsContent>
 

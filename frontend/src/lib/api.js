@@ -20,15 +20,16 @@ export async function startDaily(session_id) {
   return data;
 }
 
-export async function textTurn(session_id, text, speak = true) {
-  const { data } = await http.post(`/turn/text`, { session_id, text, speak });
+export async function textTurn(session_id, text, speak = true, assistance_factor = 1.0) {
+  const { data } = await http.post(`/turn/text`, { session_id, text, speak, assistance_factor });
   return data;
 }
 
-export async function voiceTurn(session_id, blob, speak = true) {
+export async function voiceTurn(session_id, blob, speak = true, assistance_factor = 1.0) {
   const fd = new FormData();
   fd.append("session_id", session_id);
   fd.append("speak", String(speak));
+  fd.append("assistance_factor", String(assistance_factor));
   fd.append("audio", blob, "utt.webm");
   const { data } = await http.post(`/turn/voice`, fd, {
     headers: { "Content-Type": "multipart/form-data" },

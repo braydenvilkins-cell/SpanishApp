@@ -5,7 +5,7 @@ import React from "react";
  * Renders the latest turn's grade, corrections, vocab, and tutor tip.
  * This NEVER speaks - it's pure on-screen coaching so audio is uninterrupted.
  */
-export default function TutorFeedback({ turn, level }) {
+export default function TutorFeedback({ turn, level, assistance = 1, transcriptViews = 0, speed = 1 }) {
   if (!turn) {
     return (
       <div
@@ -28,6 +28,8 @@ export default function TutorFeedback({ turn, level }) {
   const corrections = turn.corrections || [];
   const vocab = turn.vocab_injected || {};
   const dims = ["grammar", "lexicon", "fluency", "pronunciation", "comprehension", "complexity"];
+  const assistPct = Math.round(assistance * 100);
+  const assistColor = assistance >= 0.9 ? "var(--green)" : assistance >= 0.7 ? "var(--klein)" : "var(--red)";
 
   return (
     <div
@@ -40,6 +42,34 @@ export default function TutorFeedback({ turn, level }) {
       </div>
 
       <div className="p-5 space-y-5">
+        {/* Assistance / improvement-credit indicator */}
+        <div
+          className="flex items-center justify-between border border-zinc-200 px-3 py-2"
+          data-testid="assistance-indicator"
+        >
+          <div className="flex flex-col">
+            <span className="overline text-zinc-500">IMPROVEMENT CREDIT</span>
+            <span className="font-mono text-xs text-zinc-500">
+              speed {speed.toFixed(2)}× · peeks {transcriptViews}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-24 h-2 bg-zinc-200 relative">
+              <div
+                className="absolute top-0 left-0 h-full"
+                style={{ width: `${assistPct}%`, background: assistColor }}
+              />
+            </div>
+            <span
+              className="font-display text-xl font-black tracking-tighter"
+              style={{ color: assistColor }}
+              data-testid="assistance-pct"
+            >
+              {assistPct}%
+            </span>
+          </div>
+        </div>
+
         {turn.tutor_tip && (
           <div data-testid="tutor-tip">
             <div className="overline text-zinc-500 mb-1">COACH NOTE</div>
