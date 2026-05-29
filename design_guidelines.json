@@ -1,0 +1,116 @@
+{
+  "theme": "Light",
+  "archetype": "4 (Swiss & High-Contrast)",
+  "emotional_tone": "Objective, rigid, functional, high-fidelity. It feels like a sophisticated instrument for language mastery rather than a gamified toy.",
+  "colors": {
+    "background": "#FFFFFF",
+    "surface": "#FAFAFA",
+    "surface_dark": "#0A0A0A",
+    "text_primary": "#0A0A0A",
+    "text_secondary": "#52525B",
+    "text_inverse": "#FFFFFF",
+    "accent_primary": "#002FA7",
+    "accent_alert": "#FF2A00",
+    "accent_success": "#00C853",
+    "border": "#E4E4E7",
+    "border_dark": "#27272A"
+  },
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "body_font": "IBM Plex Sans",
+    "mono_font": "IBM Plex Mono",
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-black leading-none",
+      "h2": "text-3xl sm:text-4xl tracking-tight font-bold leading-none",
+      "h3": "text-xl sm:text-2xl tracking-tight font-semibold leading-tight",
+      "h4": "text-lg sm:text-xl font-medium",
+      "body": "text-base leading-relaxed",
+      "mono": "text-sm tracking-tight font-mono",
+      "overline": "text-xs tracking-[0.2em] uppercase font-bold"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous spacing (p-8 to p-12) for breathing room. Strict grid alignments.",
+    "grid_modes": {
+      "dashboard": "MODE B (Control Room Grid): grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with gap-4 or gap-6. Dense data, crisp widget borders.",
+      "voice_view": "MODE A (Tetris Grid): grid-cols-1 lg:grid-cols-12 with gap-8. Highly asymmetric. Orb dominates."
+    },
+    "surfaces": "Grid Borders (The Technical Look). Container uses border-collapse layout style, child items have 1px solid borders (border-black/10) to expose the grid skeleton. No soft shadows."
+  },
+  "components": {
+    "voice_orb": {
+      "description": "Massive central floating interactive element (hold-to-talk). Uses framer-motion for smooth scaling/pulsating.",
+      "visuals": "International Klein Blue (#002FA7). 'Listening' state expands/pulses. 'Thinking' state shows a spinner or waveform. 'Speaking' state shows audio waveform visualization.",
+      "shadcn_base": "Custom HTML/Framer Motion, not Shadcn."
+    },
+    "live_transcript": {
+      "description": "Toggleable side panel or overlay.",
+      "visuals": "Left-aligned, strict typography. Spanish text large (text-xl), English translation small and muted (text-sm text-secondary) directly underneath. Tap-any-word wraps word in a subtle border and triggers inline translation popover.",
+      "shadcn_base": "Popover for translation, ScrollArea for transcript."
+    },
+    "cefr_dashboard": {
+      "description": "Main analytics view.",
+      "visuals": "Radar chart (Recharts) mapping grammar, lexicon, fluency, pronunciation, comprehension, complexity. 1px sharp strokes, no gradient fills. Progress bars for level advancement.",
+      "shadcn_base": "Card (styled without rounded corners, flat borders), Chart."
+    },
+    "vocabulary_heatmap": {
+      "description": "Grid of words like a GitHub commit graph.",
+      "visuals": "Dense grid layout (gap-1 or gap-0.5). Colors map from light grey (unseen/weak) to Swiss Green #00C853 (mastered). Hover shows tooltip with last-seen date and accuracy.",
+      "shadcn_base": "HoverCard or Tooltip."
+    },
+    "daily_card": {
+      "description": "Bento box item for daily suggested conversation.",
+      "visuals": "High contrast. Black background with white text, or using abstract geometric background. Prominent 'Start' button.",
+      "shadcn_base": "Card (Customized for high contrast)."
+    },
+    "error_corrections": {
+      "description": "Inline feedback for user utterances.",
+      "visuals": "Chips appearing under text. Wrong form in Signal Red (#FF2A00) with line-through. Correct form next to it in Swiss Green (#00C853) with a grammar tag (overline style).",
+      "shadcn_base": "Badge (Customized colors)."
+    },
+    "base44_inspector": {
+      "description": "Dev panel showing encoded data. Nerd appeal.",
+      "visuals": "Retro-Futurism / Terminal look. Dark background (#0A0A0A), IBM Plex Mono font, green or white text. Hidden behind a 'Dev Mode' toggle.",
+      "shadcn_base": "Sheet or Collapsible."
+    },
+    "topic_graph": {
+      "description": "Visual map of conversations.",
+      "visuals": "Abstract nodes connected by 1px lines. High contrast black dots on white surface.",
+      "shadcn_base": "Custom SVG/Canvas."
+    }
+  },
+  "motion_and_interactions": {
+    "hover_states": "Crisp color inversions. A white button with black border becomes black background with white text instantly on hover.",
+    "transitions": "Fast and decisive. Use transition-all duration-150 ease-out.",
+    "active_states": "Scale down slightly (scale-95) on active/click for tactile feel."
+  },
+  "icons_and_assets": {
+    "library": "@phosphor-icons/react",
+    "style": "Bold or regular weight. Must be sharp, not playful.",
+    "media": [
+      {
+        "category": "user_avatar",
+        "url": "https://images.unsplash.com/photo-1758534063829-a72058381e21?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwZXJzb24lMjBwb3J0cmFpdCUyMG1pbmltYWxpc3QlMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc4MDA4NzU0N3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Professional user avatar for the top-right nav."
+      },
+      {
+        "category": "daily_topic_background",
+        "url": "https://images.pexels.com/photos/31757550/pexels-photo-31757550.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Abstract black and white geometric pattern for the daily conversation card."
+      }
+    ]
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure text over any colored background meets minimum 4.5:1 ratio. Text shadow not needed on flat surfaces.",
+    "testing_attributes": "ALL interactive elements MUST include a data-testid. Examples: data-testid='voice-orb-btn', data-testid='transcript-toggle-btn', data-testid='dev-mode-switch'."
+  },
+  "instructions_to_main_agent": [
+    "Use @phosphor-icons/react for icons.",
+    "Install recharts for the CEFR Radar Chart.",
+    "Install framer-motion for the Voice Orb.",
+    "Do NOT use 'Inter' for headings. Install and use Cabinet Grotesk for headings, IBM Plex Sans for body, IBM Plex Mono for the Base44 Inspector.",
+    "Keep borders sharp (rounded-none or max rounded-sm). No heavy drop shadows. Use 1px solid borders for separation.",
+    "In the Voice UI view, center the Voice Orb visually but ensure the layout is asymmetric (e.g., transcript taking up a side panel).",
+    "For Shadcn components, heavily customize to remove the default rounded Vercel look. Make them flat, boxy, and high-contrast."
+  ]
+}
