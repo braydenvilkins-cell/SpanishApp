@@ -1,55 +1,51 @@
-import { useEffect } from "react";
-import "@/App.css";
+import React, { useEffect, useState, useCallback } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import { Toaster } from "sonner";
+import Layout from "./components/Layout";
+import Talk from "./pages/Talk";
+import Daily from "./pages/Daily";
+import Dashboard from "./pages/Dashboard";
+import Vocab from "./pages/Vocab";
+import Review from "./pages/Review";
+import { initSession } from "./lib/api";
+import { getSessionId, setSessionId } from "./lib/session";
 
 function App() {
+  const [session, setSession] = useState(null);
+
+  const refresh = useCallback(async (existingId) => {
+    const sid = existingId || getSessionId();
+    const data = await initSession(sid);
+    setSessionId(data.session_id);
+    setSession(data);
+    return data;
+  }, []);
+
+  useEffect(() => {
+    refresh().catch((e) => console.error("session init failed", e));
+  }, [refresh]);
+
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-mono text-sm text-zinc-500">
+        inicializando nivel...
+      </div>
+    );
+  }
+
   return (
-    <div className="App">
-      <BrowserRouter>
+    <BrowserRouter>
+      <Toaster position="bottom-right" theme="light" />
+      <Layout level={session.level}>
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route path="/" element={<Talk session={session} refreshSession={refresh} />} />
+          <Route path="/daily" element={<Daily session={session} refreshSession={refresh} />} />
+          <Route path="/dashboard" element={<Dashboard session={session} />} />
+          <Route path="/vocab" element={<Vocab session={session} />} />
+          <Route path="/review" element={<Review session={session} />} />
         </Routes>
-      </BrowserRouter>
-    </div>
+      </Layout>
+    </BrowserRouter>
   );
 }
 
