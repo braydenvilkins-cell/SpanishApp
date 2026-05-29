@@ -70,6 +70,10 @@ def test_turn_text_returns_full_shape(session_id):
     assert isinstance(d["proficiency"], dict)
     for dim in ["grammar", "lexicon", "fluency", "pronunciation", "comprehension", "complexity"]:
         assert dim in d["proficiency"]
+    # New tutor coaching fields (English)
+    for k in ("tutor_tip", "strength", "next_target"):
+        assert k in d, f"missing new tutor field: {k}"
+        assert isinstance(d[k], str) and len(d[k]) > 0, f"empty tutor field: {k}"
 
 
 # ---------- Translate ----------

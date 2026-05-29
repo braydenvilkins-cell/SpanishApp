@@ -31,7 +31,7 @@ function Word({ word, context }) {
         </span>
       </PopoverTrigger>
       <PopoverContent className="rounded-none border-black p-3 w-64 font-mono text-sm">
-        {loading && <div>traduciendo...</div>}
+        {loading && <div>translating...</div>}
         {data && (
           <div>
             <div className="overline mb-1">{data.part_of_speech || "—"} · {data.cefr}</div>
@@ -55,16 +55,16 @@ export default function Transcript({ history, show }) {
       style={{ maxHeight: "70vh" }}
     >
       <div className="sticky top-0 bg-black text-white px-4 py-2 overline">
-        TRANSCRIPCIÓN · TAP CUALQUIER PALABRA
+        TRANSCRIPT · TAP ANY SPANISH WORD
       </div>
       <div className="p-6 space-y-6">
         {history.length === 0 && (
-          <div className="text-zinc-400 font-mono text-sm">Aún no hay turnos.</div>
+          <div className="text-zinc-400 font-mono text-sm">No turns yet.</div>
         )}
         {history.map((h, i) => (
           <div key={i} className="space-y-3">
             <div>
-              <div className="overline text-zinc-400">TÚ · {h.pronunciation_score ?? "—"}/99</div>
+              <div className="overline text-zinc-400">YOU · {h.pronunciation_score ?? "—"}/99</div>
               <div className="text-base text-zinc-700">{h.user}</div>
             </div>
             <div>

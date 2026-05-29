@@ -23,9 +23,9 @@ export default function VoiceOrb({ state, onStart, onStop }) {
     isRec ? "#FF2A00" : isSpeaking ? "#00C853" : isThinking ? "#0a0a0a" : "#002FA7";
 
   const label =
-    isRec ? "ESCUCHANDO..." :
-    isThinking ? "PENSANDO..." :
-    isSpeaking ? "HABLANDO" : "MANTÉN PARA HABLAR";
+    isRec ? "LISTENING..." :
+    isThinking ? "THINKING..." :
+    isSpeaking ? "SPEAKING" : "HOLD TO TALK";
 
   return (
     <div className="relative flex flex-col items-center select-none">

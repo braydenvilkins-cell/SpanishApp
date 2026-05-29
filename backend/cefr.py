@@ -116,7 +116,10 @@ You MUST respond as a single JSON object with this exact schema:
   ],
   "vocab_injected": {{"lemma": "<lemma>", "tag": "verb|noun|adjective|preposition|conjunction|idiom|subjunctive", "cefr": "A1|A2|B1|B2|C1|C2", "translation": "<English>"}},
   "pronunciation_score": <0-99>,
-  "english_gloss": "<one-line English translation of assistant_reply>"
+  "english_gloss": "<one-line English translation of assistant_reply>",
+  "tutor_tip": "<2-3 sentence written tutor note in ENGLISH addressing the user as 'you'. Be specific: praise what worked, name the structure/rule to focus on next, and suggest a tiny actionable drill for the next turn. Do NOT speak it aloud - this is silent on-screen coaching.>",
+  "strength": "<one short English phrase naming what the user did well this turn>",
+  "next_target": "<one short English phrase naming the structure or vocabulary you want them to attempt next turn>"
 }}
 Return ONLY the JSON, nothing else."""
 

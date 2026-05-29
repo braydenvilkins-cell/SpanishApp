@@ -19,21 +19,21 @@ export default function Review({ session }) {
 
   return (
     <div className="p-12 max-w-3xl mx-auto">
-      <div className="overline text-zinc-500 mb-2">REPASO ESPACIADO</div>
+      <div className="overline text-zinc-500 mb-2">SPACED REVIEW</div>
       <h1 className="font-display text-5xl font-black tracking-tighter leading-none mb-10">
-        Tus errores. Ahora aprendidos.
+        Your mistakes. Now learned.
       </h1>
 
       {!card && (
         <div className="border border-zinc-200 p-12 text-center font-mono text-sm text-zinc-500" data-testid="review-empty">
-          Aún no hay tarjetas para repasar. Habla con Nivel primero.
+          No cards to review yet. Talk to Nivel first.
         </div>
       )}
 
       {card && (
         <div className="border-2 border-black bg-white p-12" data-testid="review-card">
           <div className="overline text-zinc-500 mb-4">
-            {card.kind === "correction" ? "CORRECCIÓN" : "VOCABULARIO"} ·{" "}
+            {card.kind === "correction" ? "CORRECTION" : "VOCABULARY"} ·{" "}
             {card.tag?.toUpperCase()} {card.cefr ? `· ${card.cefr}` : ""}
           </div>
           <div className="font-display text-5xl font-black tracking-tighter mb-8">
@@ -42,7 +42,7 @@ export default function Review({ session }) {
           {reveal ? (
             <>
               <div className="border-t border-zinc-200 pt-6">
-                <div className="overline text-zinc-500 mb-2">RESPUESTA</div>
+                <div className="overline text-zinc-500 mb-2">ANSWER</div>
                 <div className="font-display text-3xl font-bold" style={{ color: "var(--green)" }}>
                   {card.back}
                 </div>
@@ -61,7 +61,7 @@ export default function Review({ session }) {
                   onClick={next}
                   className="invert-hover px-6 py-3 overline tactile"
                 >
-                  SIGUIENTE →
+                  NEXT →
                 </button>
               </div>
             </>
@@ -71,7 +71,7 @@ export default function Review({ session }) {
               onClick={() => setReveal(true)}
               className="bg-black text-white px-6 py-3 overline tactile hover:bg-zinc-800"
             >
-              MOSTRAR RESPUESTA
+              SHOW ANSWER
             </button>
           )}
           <div className="mt-10 font-mono text-xs text-zinc-500">

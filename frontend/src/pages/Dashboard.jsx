@@ -13,7 +13,7 @@ export default function Dashboard({ session }) {
   }, [sid]);
 
   if (!data) {
-    return <div className="p-12 font-mono text-sm text-zinc-500">cargando dashboard...</div>;
+    return <div className="p-12 font-mono text-sm text-zinc-500">loading dashboard...</div>;
   }
 
   const radarData = Object.entries(data.proficiency).map(([k, v]) => ({
@@ -28,12 +28,12 @@ export default function Dashboard({ session }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
       <section className="lg:col-span-5 p-12 border-r border-zinc-200">
-        <div className="overline text-zinc-500 mb-2">NIVEL ACTUAL</div>
+        <div className="overline text-zinc-500 mb-2">CURRENT LEVEL</div>
         <div className="font-display text-8xl font-black tracking-tighter leading-none" data-testid="dashboard-level">
           {data.level}
         </div>
         <div className="font-mono text-sm text-zinc-500 mt-2">
-          puntaje agregado · {overall}/99
+          aggregate score · {overall}/99
         </div>
 
         <div className="mt-10 flex gap-1">
@@ -64,9 +64,9 @@ export default function Dashboard({ session }) {
       </section>
 
       <section className="lg:col-span-7 p-12">
-        <div className="overline text-zinc-500 mb-2">DIMENSIONES CEFR</div>
+        <div className="overline text-zinc-500 mb-2">CEFR DIMENSIONS</div>
         <div className="font-display text-2xl font-bold mb-6">
-          Seis ejes que definen tu español.
+          Six axes that define your Spanish.
         </div>
         <div className="border border-zinc-200 p-4" style={{ height: 380 }} data-testid="cefr-radar">
           <ResponsiveContainer width="100%" height="100%">
@@ -96,9 +96,9 @@ export default function Dashboard({ session }) {
         </div>
 
         <div className="mt-10 grid grid-cols-3 gap-px bg-zinc-200">
-          <Stat label="Turnos" value={data.turn} testid="stat-turns" />
+          <Stat label="Turns" value={data.turn} testid="stat-turns" />
           <Stat label="Vocab" value={data.vocab_count} testid="stat-vocab" />
-          <Stat label="Errores" value={data.correction_count} testid="stat-errors" />
+          <Stat label="Errors" value={data.correction_count} testid="stat-errors" />
         </div>
       </section>
     </div>

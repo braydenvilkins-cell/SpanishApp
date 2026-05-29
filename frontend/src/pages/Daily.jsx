@@ -20,9 +20,9 @@ export default function Daily({ session, refreshSession }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
       <div className="lg:col-span-7 p-12 border-r border-zinc-200">
-        <div className="overline text-zinc-500 mb-4">{data?.date || "HOY"}</div>
+        <div className="overline text-zinc-500 mb-4">{data?.date || "TODAY"}</div>
         <h1 className="font-display text-5xl sm:text-6xl font-black tracking-tighter leading-none mb-8">
-          Tu conversación<br />de hoy.
+          Today's<br />conversation.
         </h1>
 
         <div
@@ -36,12 +36,12 @@ export default function Daily({ session, refreshSession }) {
             backgroundColor: "rgba(10,10,10,0.85)",
           }}
         >
-          <div className="overline mb-3">NIVEL · {data?.level || "A1"}</div>
+          <div className="overline mb-3">LEVEL · {data?.level || "A1"}</div>
           <div className="font-display text-3xl font-bold mb-4">
-            {data?.topic || "Cargando..."}
+            {data?.topic || "Loading..."}
           </div>
           <div className="font-mono text-sm mb-6 text-zinc-300">
-            OBJETIVO GRAMATICAL · {data?.target || "..."}
+            GRAMMAR GOAL · {data?.target || "..."}
           </div>
           <div className="font-mono text-sm mb-8">
             ~{data?.duration_min || 5} min
@@ -54,36 +54,36 @@ export default function Daily({ session, refreshSession }) {
             onClick={start}
             className="bg-white text-black px-6 py-3 font-display font-black tracking-tighter text-xl tactile hover:bg-yellow-300"
           >
-            COMENZAR →
+            START →
           </button>
         </div>
       </div>
 
       <div className="lg:col-span-5 p-12 bg-zinc-50">
-        <div className="overline text-zinc-500 mb-4">CÓMO FUNCIONA</div>
+        <div className="overline text-zinc-500 mb-4">HOW IT WORKS</div>
         <ol className="space-y-6 font-display">
           <li className="flex gap-4">
             <span className="font-black text-4xl tracking-tighter text-zinc-300">01</span>
             <span className="text-lg leading-tight pt-2">
-              Mantén el orbe azul y habla en español.
+              Hold the blue orb and speak in Spanish.
             </span>
           </li>
           <li className="flex gap-4">
             <span className="font-black text-4xl tracking-tighter text-zinc-300">02</span>
             <span className="text-lg leading-tight pt-2">
-              Nivel transcribe, califica y responde en voz natural.
+              Nivel transcribes, grades, and replies in a natural voice.
             </span>
           </li>
           <li className="flex gap-4">
             <span className="font-black text-4xl tracking-tighter text-zinc-300">03</span>
             <span className="text-lg leading-tight pt-2">
-              Cada turno ajusta tu vector CEFR en seis dimensiones.
+              Every turn updates your CEFR vector across six dimensions.
             </span>
           </li>
           <li className="flex gap-4">
             <span className="font-black text-4xl tracking-tighter text-zinc-300">04</span>
             <span className="text-lg leading-tight pt-2">
-              Inyectamos una palabra o estructura un nivel por encima del tuyo.
+              A silent written tutor coaches you in English on the side.
             </span>
           </li>
         </ol>

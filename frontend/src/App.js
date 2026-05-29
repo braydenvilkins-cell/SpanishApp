@@ -28,7 +28,7 @@ function App() {
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center font-mono text-sm text-zinc-500">
-        inicializando nivel...
+        initializing nivel...
       </div>
     );
   }

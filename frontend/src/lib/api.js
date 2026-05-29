@@ -3,7 +3,7 @@ import axios from "axios";
 const BASE = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BASE}/api`;
 
-export const http = axios.create({ baseURL: API, timeout: 60000 });
+export const http = axios.create({ baseURL: API, timeout: 120000 });
 
 export async function initSession(session_id) {
   const { data } = await http.post("/session/init", { session_id });

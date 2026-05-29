@@ -11,8 +11,8 @@ function heatClass(m) {
 }
 
 const TAG_LABEL = {
-  "@": "verbo", "#": "nombre", "$": "adjetivo", "%": "preposición",
-  "&": "conjunción", "*": "idiom.", "+": "subjuntivo", "-": "error",
+  "@": "verb", "#": "noun", "$": "adjective", "%": "preposition",
+  "&": "conjunction", "*": "idiom", "+": "subjunctive", "-": "error",
 };
 
 export default function Vocab({ session }) {
@@ -30,13 +30,13 @@ export default function Vocab({ session }) {
 
   return (
     <div className="p-12">
-      <div className="overline text-zinc-500 mb-2">VOCABULARIO</div>
+      <div className="overline text-zinc-500 mb-2">VOCABULARY</div>
       <h1 className="font-display text-5xl font-black tracking-tighter leading-none mb-2">
-        Heatmap léxico.
+        Lexical heatmap.
       </h1>
       <p className="text-zinc-600 max-w-xl mb-10">
-        Cada celda es una palabra que has visto o producido. El color va de gris
-        (recién encontrada) a verde Swiss (dominada).
+        Each cell is a word you have seen or produced. Color goes from grey
+        (just encountered) to Swiss green (mastered).
       </p>
 
       <div className="flex items-center gap-4 mb-6 font-mono text-xs">
@@ -81,7 +81,7 @@ export default function Vocab({ session }) {
       </div>
 
       <div className="mt-10 border border-zinc-200">
-        <div className="bg-black text-white px-4 py-2 overline">PALABRAS RECIENTES</div>
+        <div className="bg-black text-white px-4 py-2 overline">RECENT WORDS</div>
         <div className="divide-y divide-zinc-200">
           {vocab.slice(-20).reverse().map((v, i) => (
             <div key={i} className="grid grid-cols-12 px-4 py-2 font-mono text-sm">
@@ -94,7 +94,7 @@ export default function Vocab({ session }) {
           ))}
           {vocab.length === 0 && (
             <div className="px-4 py-4 text-zinc-400 font-mono text-sm">
-              Aún sin palabras. Empieza una conversación.
+              No words yet. Start a conversation.
             </div>
           )}
         </div>

@@ -1,0 +1,42 @@
+{
+  "summary": "Iteration 2 tested: TTS-null orb fix, new tutor_tip/strength/next_target backend fields, TutorFeedback panel UI, English chrome on all pages, tab switching. Backend 100% (11/11 incl. new fields). Frontend mostly passes BUT one CRITICAL runtime crash discovered in Transcript component (field-name mismatch h.assistant vs h.assistant_reply).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Transcript.jsx",
+        "issue": "Uncaught TypeError: Cannot read properties of undefined (reading 'split') at Transcript.jsx:73 when user clicks TRANSCRIPT tab after sending at least one turn. Component reads `h.assistant` but Talk.jsx appendTurn merges the API response which exposes the field as `h.assistant_reply` (backend server.py:272 returns `assistant_reply`). The in-memory turn object stored on the backend uses key `assistant` (server.py:216) but the JSON returned to the client uses key `assistant_reply` - frontend Transcript was never updated to match. Result: app shows the red 'Uncaught runtime errors' overlay and requires page refresh. This is the SAME class of user-reported bug ('Error pops up when speaker responds, requires app refresh').",
+        "selector": "[data-testid=\"tab-transcript\"] then transcript-panel",
+        "priority": "HIGH/CRITICAL"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard", "issues": ["Recharts width(-1)/height(-1) warning persists (cosmetic, chart still renders)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_nivel_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix Transcript.jsx line 73-74: change `h.assistant` -> `h.assistant_reply` (or normalize the field in Talk.jsx appendTurn so both `assistant` and `assistant_reply` are set). Add a defensive `(h.assistant_reply || h.assistant || '').split(...)` to prevent future regressions. Also consider wrapping the panel in an ErrorBoundary."
+  ],
+  "critical_code_review_comments": [
+    "Field-name contract mismatch between backend response (assistant_reply) and Transcript component (h.assistant). The original Spanish-only UI likely worked only because transcript was hidden by default; with the new tabbed layout this regression is exposed.",
+    "Transcript should defensively handle missing fields - any single bad turn currently crashes the whole tab.",
+    "Daily.jsx line 23 falls back to literal 'TODAY' only when data?.date is falsy; when /api/daily returns a date string it replaces 'TODAY'. This is fine, but the heading 'Today's conversation.' uses a <br/> in the middle so textContent reads 'Today'sconversation.' — confirmed via DOM that strings ARE present in English."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_nivel_api.py (added assertions for tutor_tip, strength, next_target on /api/turn/text)"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 incl. new tutor fields)",
+    "frontend": "Talk text-send + Tutor panel: PASS. CEFR labels (comp/cplx, no duplicate COMP): PASS. Orb not stuck in THINKING: PASS. English chrome on Daily/Dashboard/Vocab/Review: PASS. Transcript tab: FAIL (crash)."
+  },
+  "seed_data_creation": "TEST_fixed_session_123 reused from iteration_1.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Verified by direct UI walkthrough: typed 'Hola, me llamo Carlos' on Talk page (/), got tutor-tip='COACH NOTE You used a correct basic introduction...', tutor-strength='Clear self-introduction', tutor-next-target='Answer with Soy de... using ser', pronunciation-score=50/99. Orb moved idle->thinking->speaking (never stuck). After turn, clicking tab-transcript triggers the 'split of undefined' crash. Fix needed in /app/frontend/src/components/Transcript.jsx (line 73, 74). Backend test file is canonical regression suite at /app/backend/tests/test_nivel_api.py.",
+  "rca of the issue": "RCA: Talk.jsx appendTurn does `{ user: userText, ...res }`. The API response `res` from POST /api/turn/text contains key `assistant_reply` (backend server.py:272). Transcript.jsx accesses `h.assistant` (without _reply suffix), which is undefined, then calls `.split(...)` on it -> TypeError. Reproduction: open /, type Spanish text, click SEND, wait for tutor panel, click TRANSCRIPT tab -> red runtime overlay. Mitigation: rename either side, or write `(h.assistant_reply || h.assistant || '')` defensively. Also wrap with ErrorBoundary so a single bad turn does not kill the tree."
+}

@@ -197,6 +197,9 @@ async def _process_turn(session: Dict, user_text: str, from_stt: bool, speak: bo
     vocab_inj = parsed.get("vocab_injected") or {}
     pron = int(parsed.get("pronunciation_score", session["proficiency"]["pronunciation"]))
     english = parsed.get("english_gloss", "")
+    tutor_tip = parsed.get("tutor_tip", "")
+    strength = parsed.get("strength", "")
+    next_target = parsed.get("next_target", "")
 
     # Update proficiency
     if from_stt:
@@ -216,6 +219,9 @@ async def _process_turn(session: Dict, user_text: str, from_stt: bool, speak: bo
         "corrections": corrections,
         "vocab_injected": vocab_inj,
         "pronunciation_score": pron,
+        "tutor_tip": tutor_tip,
+        "strength": strength,
+        "next_target": next_target,
         "at": now_iso(),
     })
 
@@ -269,6 +275,9 @@ async def _process_turn(session: Dict, user_text: str, from_stt: bool, speak: bo
         "corrections": corrections,
         "vocab_injected": vocab_inj,
         "pronunciation_score": pron,
+        "tutor_tip": tutor_tip,
+        "strength": strength,
+        "next_target": next_target,
         "level": session["level"],
         "proficiency": new_prof,
         "turn": session["turn"],

@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import VoiceOrb from "../components/VoiceOrb";
 import Transcript from "../components/Transcript";
 import Base44Inspector from "../components/Base44Inspector";
+import TutorFeedback from "../components/TutorFeedback";
 import { Switch } from "../components/ui/switch";
-import { initSession, voiceTurn, textTurn } from "../lib/api";
-import { getSessionId, setSessionId } from "../lib/session";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import { voiceTurn, textTurn } from "../lib/api";
 import { toast } from "sonner";
 
 export default function Talk({ session, refreshSession }) {
@@ -12,7 +13,7 @@ export default function Talk({ session, refreshSession }) {
   const [showTranscript, setShowTranscript] = useState(true);
   const [history, setHistory] = useState([]);
   const [text, setText] = useState("");
-  const [lastGrade, setLastGrade] = useState(null);
+  const [lastTurn, setLastTurn] = useState(null);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
   const audioRef = useRef(null);
@@ -20,13 +21,25 @@ export default function Talk({ session, refreshSession }) {
   const sid = session?.session_id;
 
   const playAudio = (b64) => {
-    if (!b64) return;
-    const a = new Audio(`data:audio/mp3;base64,${b64}`);
-    audioRef.current = a;
-    setOrbState("speaking");
-    a.onended = () => setOrbState("idle");
-    a.onerror = () => setOrbState("idle");
-    a.play().catch(() => setOrbState("idle"));
+    if (!b64) {
+      // No audio available - return to idle so the user can speak again
+      setOrbState("idle");
+      return;
+    }
+    try {
+      // Stop any previous playback
+      if (audioRef.current) {
+        try { audioRef.current.pause(); } catch (_) {}
+      }
+      const a = new Audio(`data:audio/mp3;base64,${b64}`);
+      audioRef.current = a;
+      setOrbState("speaking");
+      a.onended = () => setOrbState("idle");
+      a.onerror = () => setOrbState("idle");
+      a.play().catch(() => setOrbState("idle"));
+    } catch (e) {
+      setOrbState("idle");
+    }
   };
 
   const startRecording = async () => {
@@ -48,7 +61,7 @@ export default function Talk({ session, refreshSession }) {
           appendTurn({ user: res.user_text, ...res });
           playAudio(res.audio_b64);
         } catch (e) {
-          toast.error("Error de transcripción");
+          toast.error("Transcription failed. Try again.");
           setOrbState("idle");
         }
       };
@@ -56,7 +69,8 @@ export default function Talk({ session, refreshSession }) {
       rec.start();
       setOrbState("recording");
     } catch (e) {
-      toast.error("Necesito permiso de micrófono");
+      toast.error("Microphone permission required");
+      setOrbState("idle");
     }
   };
 
@@ -67,7 +81,7 @@ export default function Talk({ session, refreshSession }) {
 
   const appendTurn = (turn) => {
     setHistory((h) => [...h, turn]);
-    setLastGrade(turn.cefr_grade);
+    setLastTurn(turn);
     refreshSession?.();
   };
 
@@ -81,7 +95,7 @@ export default function Talk({ session, refreshSession }) {
       appendTurn({ user: userText, ...res });
       playAudio(res.audio_b64);
     } catch (e) {
-      toast.error("Error de servidor");
+      toast.error("Server error. Try again.");
       setOrbState("idle");
     }
   };
@@ -89,14 +103,14 @@ export default function Talk({ session, refreshSession }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-zinc-200">
       {/* Left: orb area */}
-      <section className="lg:col-span-7 p-12 flex flex-col items-center justify-center min-h-[70vh] border-r border-zinc-200">
+      <section className="lg:col-span-6 p-12 flex flex-col items-center justify-center min-h-[70vh] border-r border-zinc-200">
         <div className="w-full max-w-md mb-12">
-          <div className="overline text-zinc-500 mb-2">TEMA ACTUAL</div>
+          <div className="overline text-zinc-500 mb-2">CURRENT TOPIC</div>
           <div className="font-display text-3xl font-bold leading-tight" data-testid="current-topic">
-            {session?.topic || "Presentación inicial"}
+            {session?.topic || "Initial introduction"}
           </div>
           <div className="overline mt-2" style={{ color: "var(--klein)" }}>
-            OBJETIVO: {session?.target || "saludos básicos"}
+            GOAL · {session?.target || "basic greetings"}
           </div>
         </div>
 
@@ -108,7 +122,7 @@ export default function Talk({ session, refreshSession }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submitText()}
-            placeholder="...o escribe tu turno en español"
+            placeholder="...or type your turn in Spanish"
             className="flex-1 border border-zinc-300 px-3 py-2 font-mono text-sm focus:outline-none focus:border-black"
           />
           <button
@@ -116,37 +130,49 @@ export default function Talk({ session, refreshSession }) {
             onClick={submitText}
             className="invert-hover px-4 py-2 overline tactile"
           >
-            ENVIAR
+            SEND
           </button>
         </div>
-
-        {lastGrade && (
-          <div className="mt-8 grid grid-cols-3 gap-px bg-zinc-200 w-full max-w-md" data-testid="last-grade">
-            {Object.entries(lastGrade).map(([k, v]) => (
-              <div key={k} className="bg-white p-2 text-center">
-                <div className="overline text-zinc-500">{k.slice(0, 4)}</div>
-                <div className="font-mono text-lg">{v}</div>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
 
-      {/* Right: transcript + controls */}
-      <aside className="lg:col-span-5 p-6 space-y-4">
-        <div className="flex items-center gap-3 border border-zinc-200 px-3 py-2">
-          <span className="overline">TRANSCRIPT</span>
-          <Switch
-            data-testid="transcript-toggle-btn"
-            checked={showTranscript}
-            onCheckedChange={setShowTranscript}
-            className="ml-auto"
-          />
-        </div>
+      {/* Right: tutor feedback + transcript */}
+      <aside className="lg:col-span-6 p-6 space-y-4">
+        <Tabs defaultValue="tutor" className="w-full">
+          <TabsList className="rounded-none p-0 bg-white border border-zinc-200 w-full grid grid-cols-2 h-auto">
+            <TabsTrigger
+              value="tutor"
+              data-testid="tab-tutor"
+              className="rounded-none overline data-[state=active]:bg-black data-[state=active]:text-white py-2"
+            >
+              TUTOR FEEDBACK
+            </TabsTrigger>
+            <TabsTrigger
+              value="transcript"
+              data-testid="tab-transcript"
+              className="rounded-none overline data-[state=active]:bg-black data-[state=active]:text-white py-2"
+            >
+              TRANSCRIPT
+            </TabsTrigger>
+          </TabsList>
 
-        <Base44Inspector sessionId={sid} />
+          <TabsContent value="tutor" className="mt-4 space-y-3">
+            <TutorFeedback turn={lastTurn} level={session?.level || "A1"} />
+            <Base44Inspector sessionId={sid} />
+          </TabsContent>
 
-        <Transcript history={history} show={showTranscript} />
+          <TabsContent value="transcript" className="mt-4 space-y-3">
+            <div className="flex items-center gap-3 border border-zinc-200 px-3 py-2">
+              <span className="overline">SHOW TRANSCRIPT</span>
+              <Switch
+                data-testid="transcript-toggle-btn"
+                checked={showTranscript}
+                onCheckedChange={setShowTranscript}
+                className="ml-auto"
+              />
+            </div>
+            <Transcript history={history} show={showTranscript} />
+          </TabsContent>
+        </Tabs>
       </aside>
     </div>
   );
